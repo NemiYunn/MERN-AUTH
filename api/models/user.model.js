@@ -17,6 +17,9 @@ const userSchema = new mongoose.Schema({
     }
 },{timestamps:true});
 
+
+//This line creates a Mongoose model named 'User' 
+//based on the defined schema. 
 const User = mongoose.model('User',userSchema);
 
-export default User;
+export default User; 
