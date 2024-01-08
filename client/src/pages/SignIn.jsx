@@ -1,13 +1,15 @@
 import React from 'react'
-import {Link, useNavigate} from 'react-router-dom'
-
+import {Link, useNavigate} from 'react-router-dom';
+import {signInStart, signInSuccess, signInFailure} from '../redux/user/userSlice';
+import { useDispatch, useSelector } from 'react-redux';
 export default function SignIn() {
 
   const [formData , setFormData] = React.useState({});
-  const [error , setError] = React.useState(false)
-  const [loading , setLoading] = React.useState(false);
+ const {loading, error} = useSelector((state) => state.user);
   //initialize usenavigate
   const navigate = useNavigate();
+  //initialize dispatch
+  const dispatch = useDispatch();
 
   const handleChange = (e) => {
     setFormData({...formData,[e.target.id]:e.target.value})
@@ -17,8 +19,7 @@ export default function SignIn() {
   const handleSubmit = async(e) => {
     e.preventDefault();
     try{
-      setLoading(true)
-      setError(false)
+      dispatch(signInStart());
       //not mentioning whole path because we set up proxy on vite.config
       //catching response from backend after form submitting 
       //get response from the endpoint
@@ -31,17 +32,15 @@ export default function SignIn() {
       });
       const data = await res.json();
       // console.log(data);
-      setLoading(false);
       if(!res.ok){
-        setError(true);
-        setLoading(false);
+        dispatch(signInFailure(data));
         return;
       }
+      dispatch(signInSuccess(data));
       //use navigate if everything is okay redirect to home page
       navigate('/');
     } catch(error){
-      setLoading(false);
-      setError(true);
+     dispatch(signInFailure(error));
     }
     
   }
@@ -69,7 +68,9 @@ export default function SignIn() {
         <span className='text-blue-500'>Sign up</span>
         </Link> 
       </div>
-      <p className='text-red-500 mt-5'>{error && "Something went wrong!!!"}</p>
+      <p className='text-red-500 mt-5'>
+        {error? error.message || "Something went wrong!!!" : ''}
+      </p>
     </div>
   )
   }
