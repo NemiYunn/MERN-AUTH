@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs"
 import { errorHandler } from "../utils/error.js";
+//install jwt to the root of the project (npm i jsonwebtoken)
 import jwt from 'jsonwebtoken';
 
 export const signup = async (req,res,next) => {
@@ -25,22 +26,24 @@ export const signin = async(req,res,next) => {
         //validate passwords for that paticular user email
         const validPassword = bcryptjs.compareSync(password,validUser.password);
         if(!validPassword) return next(errorHandler(401, 'Wrong credentials!'));
+
         //create web token
         //create secret key on .env file
+        //_id is unique on db and malcious users dont know it
         const token = jwt.sign({id: validUser._id}, process.env.JWT_SECRET);
+
         //seperate password and rest of the details(passwrd shouldnt show)
         const {password: hashedPassword, ...rest} = validUser._doc;
+
         //create expiry date for the cookie
         const expireDate = new Date(Date.now() + 3600000); //1h
+
         //save token in a cookie
         res
             .cookie('access_token', token, {httpOnly:true, expires: expireDate}) //prevent modifying from a trird party
             .status(200)
-            .json(validUser) //get user details for displaying
+            .json(rest) //get user details for displaying //insted of passing validUser pass rest (dont wanna show password to the client side)
     } catch(error){
         next(error);
     }
 }
-
-//install json web token to the root
-//npm i jsonwebtoken
