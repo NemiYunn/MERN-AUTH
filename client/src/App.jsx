@@ -15,7 +15,8 @@ export default function App() {
       <Route path="/about" element={<About />} />
       <Route path="/sign-in" element={<Signin />} />
       <Route path="/sign-up" element={<SignUp />} />
-      <Route element={<PrivateRoute />} >
+      {/* can go inside profile compo only if there is a currentUser, tht is defined on PrivateRoute component */}
+      <Route element={<PrivateRoute />} > 
         <Route path="/profile" element={<Profile />} />
       </Route>
     </Routes>
