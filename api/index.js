@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import userRoutes from './routes/user.route.js';
 import authRoutes from './routes/auth.route.js';
+import cookieParser from 'cookie-parser';
 dotenv.config();  //for using .env file
 
 
@@ -20,6 +21,9 @@ const app = express();
 // middleware setup
 //This middleware is used to parse incoming JSON requests.
 app.use(express.json());
+
+//initialize cookie parser
+app.use(cookieParser());
 
 //The application starts listening on port 3000. 
 //You'll be able to access the application at http://localhost:3000.
