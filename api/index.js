@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import userRoutes from './routes/user.route.js';
 import authRoutes from './routes/auth.route.js';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 dotenv.config();  //for using .env file
 
 
@@ -15,8 +16,21 @@ mongoose.connect(process.env.MONGO, {
   console.error('Error connecting to MongoDB:', err);
 });
 
+//to find a directory name
+const __dirname = path.resolve();
+
 //This creates an instance of the Express application.
 const app = express();
+
+//define static  folder structure to deploy and run
+//import path
+app.use(express.static(path.join(__dirname, '/client/dist')))
+
+//when you get to any place inside cllient side, 
+//send the file (run) index.html in client end.
+app.get('*',(req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'dist', 'index.html'))
+})
 
 // middleware setup
 //This middleware is used to parse incoming JSON requests.
