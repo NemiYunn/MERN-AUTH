@@ -53,6 +53,8 @@ app.use('/api/auth', authRoutes)
 
 // This middleware handles errors that occur during the request-response cycle.
 app.use((err, req, res, next) => {
+  console.log(err);
+
   const statusCode = err.statusCode || 500;
   const message = err.message || "Internal server error!";
   return res.status(statusCode).json({
