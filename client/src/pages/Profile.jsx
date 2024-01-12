@@ -1,12 +1,19 @@
 import React from 'react'
-import { useSelector , useDispatch} from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 //to connect file input feild and image feild
 import { useRef } from 'react';
 //getStorage
 import { getDownloadURL, getStorage, ref, uploadBytesResumable } from 'firebase/storage';
 import { app } from '../firebase';
 
-import { updateUserStart, updateUserSuccess, updateUserFailure } from '../redux/user/userSlice';
+import {
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure,
+  deleteUserStart,
+  deleteUserSuccess,
+  deleteUserFailure
+} from '../redux/user/userSlice';
 
 
 export default function Profile() {
@@ -26,9 +33,9 @@ export default function Profile() {
   const [imageError, setImageError] = React.useState(false);
 
   //to store updated formData
-  const [formData , setFormData] = React.useState({});
+  const [formData, setFormData] = React.useState({});
   // console.log(formData)
-  
+
   //whenever image state change
   React.useEffect(() => {
     if (image) {
@@ -48,52 +55,70 @@ export default function Profile() {
     //  4 upload to the fireBase
     const uploadTask = uploadBytesResumable(storageRef, image);
     // 5  track uploading (track byte changes while uploading)
-    uploadTask.on('state_changed', 
-    (snapshot) => {
-      const progress = (snapshot.bytesTransferred / snapshot . totalBytes) * 100;
-      // console.log(progress)
-      setImagePercent(Math.round(progress));
-    },
-    (error) => {
-      setImageError(true)
-    },
-    () => {
-      // save new selected image url to the formData
-      getDownloadURL(uploadTask.snapshot.ref).then (
-        (downloadUrl) => 
-          setFormData({...formData, profilePicture : downloadUrl })
+    uploadTask.on('state_changed',
+      (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        // console.log(progress)
+        setImagePercent(Math.round(progress));
+      },
+      (error) => {
+        setImageError(true)
+      },
+      () => {
+        // save new selected image url to the formData
+        getDownloadURL(uploadTask.snapshot.ref).then(
+          (downloadUrl) =>
+            setFormData({ ...formData, profilePicture: downloadUrl })
 
-      )
-    }
+        )
+      }
     )
   };
 
   const handleChange = (e) => {
-    setFormData({...formData, [e.target.id] : e.target.value});
+    setFormData({ ...formData, [e.target.id]: e.target.value });
   }
 
-  const handleSubmit = async(e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    try{
+    try {
       dispatch(updateUserStart());
-      const res = await fetch (`/api/user/update/${currentUser._id}`,{
-        method : 'POST',
-        headers : {
-          'Content-Type' : 'application/json',
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        body : JSON.stringify(formData)
+        body: JSON.stringify(formData)
       })
       const data = await res.json();
       console.log(data);
-      if(!res.ok){
+      if (!res.ok) {
         dispatch(updateUserFailure(data));
         return;
       }
       dispatch(updateUserSuccess(data));
       setUpdateSuccess(true);
-    }catch(error){
+    } catch (error) {
       dispatch(updateUserFailure(error));
       console.error('Update user error:', error);
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    try {
+      dispatch(deleteUserStart());
+      const res = await fetch(`/api/user/delete/${currentUser._id}`, {
+        method: 'DELETE',
+      })
+      const data = await res.json();
+      console.log(data);
+      if (!res.ok) {
+        dispatch(deleteUserFailure(data));
+        return;
+      }
+      dispatch(deleteUserSuccess(data));
+    } catch (error) {
+      dispatch(deleteUserFailure(error));
     }
   }
 
@@ -126,40 +151,40 @@ export default function Profile() {
         // request.resource.contentType.matches('image/.*')
         />
         <p className='text-sm self-center'>
-          {imageError? (
+          {imageError ? (
             <span className='text-red-700'>Error uploading image (file size must be less than 2 MB) </span>
-          ): imagePercent>0 && imagePercent<100 ? (
+          ) : imagePercent > 0 && imagePercent < 100 ? (
             <span className='text-stale-700'>
               {`Uploading: ${imagePercent} %`}
             </span>
-          ): imagePercent === 100 ? (
+          ) : imagePercent === 100 ? (
             <span className='text-green-700'>Image Uploaded Successfully.</span>
-          ): ''}
+          ) : ''}
         </p>
 
         <input defaultValue={currentUser.username} type="text" name="username" id="username"
           placeholder='Username'
           className='bg-slate-100 rounded-lg p-3'
           onChange={handleChange}
-          />
+        />
         <input defaultValue={currentUser.email} type="email" name="email" id="email"
           placeholder='Email'
           className='bg-slate-100 rounded-lg  p-3 '
           onChange={handleChange}
-          />
+        />
         <input type="password" name="password" id="password"
           placeholder='Password'
           className='bg-slate-100 rounded-lg p-3 '
           onChange={handleChange}
-          />
+        />
 
         <button className='bg-slate-700 text-white p-3 rounded-lg 
         uppercase hover:opacity-95 disabled:opacity-80'>
-          {loading? 'loading...' : 'Update'}
+          {loading ? 'loading...' : 'Update'}
         </button>
       </form>
       <div className='flex justify-between mt-5'>
-        <span className='text-red-700 cursor-pointer'>Delete Account</span>
+        <span onClick={handleDeleteAccount} className='text-red-700 cursor-pointer'>Delete Account</span>
         <span className='text-red-700 cursor-pointer'>Sign Out</span>
       </div>
       <p className='text-red-700 mt-5'>{error && "Something went wrong !!!"}</p>

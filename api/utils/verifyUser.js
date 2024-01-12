@@ -9,13 +9,14 @@ export const verifyToken = (req,res,next) => {
     //*** */ npm i cookie-parser )
     //*** import and initialize it in index.js*/
 
-    //check token is not valid
+    //if there is no token
     if(!token) return next(errorHandler(401, "Log in first!"));
-    //if valid
+    //if there is a token (validate)
     jwt.verify(token, process.env.JWT_SECRET, (err,user) => {
+        //if not valid
         if(err) return next(errorHandler(401, 'Token is not valid!'));
-        //else
-        // req.user use in user controller update func
+        //else (valid)
+        // req.user use in user controller update/delete func
         req.user = user;
         next();
     })
