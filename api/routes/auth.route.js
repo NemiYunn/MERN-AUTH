@@ -1,6 +1,6 @@
 import express from 'express';
 //specifically import the signup function from the auth.controller.js file.
-import {signup,signin,google} from '../controllers/auth.controller.js'
+import {signup,signin,google,signOut} from '../controllers/auth.controller.js'
 
 //This creates an instance of the Express Router. The router allows you to 
 //define routes and their corresponding handlers separately.
@@ -12,5 +12,6 @@ const router = express.Router();
 router.post("/signup",signup)
 router.post("/signin",signin)
 router.post("/google",google)
+router.get("/signout",signOut)
 
 export default router;
